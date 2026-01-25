@@ -20,18 +20,28 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
-import { visitAPI } from '../../services/api';
+import { Add, Edit, Delete, Upload } from '@mui/icons-material';
+import { visitAPI, userAPI, outletAPI } from '../../services/api';
 
 function VisitSchedule() {
   const [tabValue, setTabValue] = useState(0);
   const [mdVisits, setMdVisits] = useState([]);
   const [salesVisits, setSalesVisits] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [outlets, setOutlets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const [editingVisit, setEditingVisit] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     amo: '',
@@ -42,8 +52,29 @@ function VisitSchedule() {
   });
 
   useEffect(() => {
-    loadVisits();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      const [mdResponse, salesResponse, usersResponse, outletsResponse] = await Promise.all([
+        visitAPI.getMD(),
+        visitAPI.getSales(),
+        userAPI.getAll(),
+        outletAPI.getAll(),
+      ]);
+      setMdVisits(mdResponse.data.data);
+      setSalesVisits(salesResponse.data.data);
+      setUsers(usersResponse.data.data);
+      setOutlets(outletsResponse.data.data);
+      setError('');
+    } catch (error) {
+      setError('Failed to load data');
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadVisits = async () => {
     try {
@@ -57,8 +88,6 @@ function VisitSchedule() {
     } catch (error) {
       setError('Failed to load visits');
       console.error('Error loading visits:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -87,9 +116,72 @@ function VisitSchedule() {
     setOpenDialog(true);
   };
 
+  const handleUsernameChange = (e) => {
+    const selectedUsername = e.target.value;
+    const selectedUser = users.find(u => u.username === selectedUsername);
+    
+    setFormData({
+      ...formData,
+      username: selectedUsername,
+      amo: selectedUser?.amo || '',
+      warehouse: selectedUser?.warehouse || '',
+    });
+  };
+
+  const handleOutletChange = (e) => {
+    const selectedOutletId = e.target.value;
+    const selectedOutlet = outlets.find(o => o.idoutlet === selectedOutletId);
+    
+    setFormData({
+      ...formData,
+      idoutlet: selectedOutletId,
+      namaoutlet: selectedOutlet?.namaoutlet || '',
+    });
+  };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingVisit(null);
+  };
+
+  const handleUploadDialogOpen = () => {
+    setUploadMessage('');
+    setUploadSuccess(false);
+    setOpenUploadDialog(true);
+  };
+
+  const handleUploadDialogClose = () => {
+    setOpenUploadDialog(false);
+    setUploadMessage('');
+    setUploadSuccess(false);
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadLoading(true);
+    setUploadMessage('');
+
+    try {
+      const isMD = tabValue === 0;
+      const response = isMD
+        ? await visitAPI.uploadMDExcel(file)
+        : await visitAPI.uploadSalesExcel(file);
+
+      setUploadSuccess(true);
+      setUploadMessage(`✓ ${response.data.message}`);
+      loadVisits();
+      setTimeout(() => {
+        handleUploadDialogClose();
+      }, 2000);
+    } catch (error) {
+      setUploadSuccess(false);
+      setUploadMessage(`✗ ${error.response?.data?.message || 'Upload failed'}`);
+    } finally {
+      setUploadLoading(false);
+      event.target.value = ''; // Reset file input
+    }
   };
 
   const handleSubmit = async () => {
@@ -146,13 +238,23 @@ function VisitSchedule() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Visit Schedule</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog()}
-        >
-          Add {visitType} Visit
-        </Button>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="contained"
+            startIcon={<Upload />}
+            onClick={handleUploadDialogOpen}
+            color="success"
+          >
+            Upload Excel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog()}
+          >
+            Add {visitType} Visit
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -211,41 +313,65 @@ function VisitSchedule() {
           {editingVisit ? `Edit ${visitType} Visit` : `Add ${visitType} Visit`}
         </DialogTitle>
         <DialogContent>
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Username"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          />
+          <FormControl margin="normal" fullWidth>
+            <InputLabel>Username *</InputLabel>
+            <Select
+              value={formData.username}
+              onChange={handleUsernameChange}
+              label="Username *"
+            >
+              <MenuItem value="">-- Select Username --</MenuItem>
+              {users.map((user) => (
+                <MenuItem key={user.username} value={user.username}>
+                  {user.username} - {user.nama}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             margin="normal"
             fullWidth
             label="AMO"
             value={formData.amo}
-            onChange={(e) => setFormData({ ...formData, amo: e.target.value })}
+            disabled
+            helperText="Auto-filled from user"
           />
+
           <TextField
             margin="normal"
             fullWidth
             label="Warehouse"
             value={formData.warehouse}
-            onChange={(e) => setFormData({ ...formData, warehouse: e.target.value })}
+            disabled
+            helperText="Auto-filled from user"
           />
-          <TextField
-            margin="normal"
-            fullWidth
-            label="ID Outlet"
-            value={formData.idoutlet}
-            onChange={(e) => setFormData({ ...formData, idoutlet: e.target.value })}
-          />
+
+          <FormControl margin="normal" fullWidth>
+            <InputLabel>ID Outlet *</InputLabel>
+            <Select
+              value={formData.idoutlet}
+              onChange={handleOutletChange}
+              label="ID Outlet *"
+            >
+              <MenuItem value="">-- Select Outlet --</MenuItem>
+              {outlets.map((outlet) => (
+                <MenuItem key={outlet.idoutlet} value={outlet.idoutlet}>
+                  {outlet.idoutlet} - {outlet.namaoutlet}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             margin="normal"
             fullWidth
             label="Nama Outlet"
             value={formData.namaoutlet}
-            onChange={(e) => setFormData({ ...formData, namaoutlet: e.target.value })}
+            disabled
+            helperText="Auto-filled from outlet"
           />
+
           <TextField
             margin="normal"
             fullWidth
@@ -261,6 +387,58 @@ function VisitSchedule() {
           <Button onClick={handleSubmit} variant="contained">
             Save
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openUploadDialog} onClose={handleUploadDialogClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Upload {visitType} Visits from Excel</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+              Select an Excel file (.xlsx) with the following columns:
+            </Typography>
+            <Box sx={{ 
+              bgcolor: '#f5f5f5', 
+              p: 2, 
+              borderRadius: 1, 
+              mb: 2,
+              fontFamily: 'monospace',
+              fontSize: '0.9rem'
+            }}>
+              Username | AMO | Warehouse | ID Outlet | Nama Outlet | Date Visit
+            </Box>
+            
+            <input
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              id="visit-file-input"
+              type="file"
+              onChange={handleFileUpload}
+              disabled={uploadLoading}
+            />
+            <label htmlFor="visit-file-input">
+              <Button
+                variant="contained"
+                component="span"
+                fullWidth
+                disabled={uploadLoading}
+              >
+                {uploadLoading ? 'Uploading...' : 'Choose File'}
+              </Button>
+            </label>
+
+            {uploadMessage && (
+              <Alert 
+                severity={uploadSuccess ? 'success' : 'error'} 
+                sx={{ mt: 2 }}
+              >
+                {uploadMessage}
+              </Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUploadDialogClose}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

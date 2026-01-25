@@ -78,6 +78,20 @@ export const visitAPI = {
   updateSales: (id, data) => api.put(`/visits/sales/${id}`, data),
   deleteMD: (id) => api.delete(`/visits/md/${id}`),
   deleteSales: (id) => api.delete(`/visits/sales/${id}`),
+  uploadMDExcel: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/visits/md/upload-excel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  uploadSalesExcel: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/visits/sales/upload-excel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export const visitActionAPI = {

@@ -91,6 +91,11 @@ All routes require `verifyToken` except `/auth/login` and `/auth/register`.
 - Images saved with timestamp: `uploads/images/` + originalname
 - Excel files: parsed with `exceljs`, inserted to DB, then file stored in `uploads/excel/`
 - All file operations use `sanitizeInput` middleware to prevent injection
+- **Bulk visit upload**: POST `/visits/md/upload-excel` or `/visits/sales/upload-excel`
+  - Expects `username, amo, warehouse, idoutlet, namaoutlet, datevisit` columns
+  - Returns: `{ successCount, errorCount, errors: [...] }` with first 10 errors shown
+  - Status defaults to `'scheduled'` on insert
+  - Templates available in [templates/](templates/) directory for reference
 
 ### 4. Socket.IO Broadcast Pattern (for real-time updates):
 ```javascript
