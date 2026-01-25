@@ -16,8 +16,6 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.log('JWT verification error:', error.message);
-    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     return res.status(401).json({
       success: false,
       message: 'Unauthorized - Invalid token'
