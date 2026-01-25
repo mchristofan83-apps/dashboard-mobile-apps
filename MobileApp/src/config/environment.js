@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 // Mac/Linux: ifconfig or ip addr
 
 // IMPORTANT: Update this IP address to match your computer's local network IP
-const DEV_API_URL = 'http://192.168.0.43:3001/api';
+const DEV_API_URL = 'http://192.168.0.43:8000/api';
 
 // For production, use your actual server URL
 const PROD_API_URL = 'https://your-production-server.com/api';
