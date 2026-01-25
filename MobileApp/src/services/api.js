@@ -63,6 +63,13 @@ export const visitAPI = {
   getMD: () => api.get('/visits/md'),
   getSales: () => api.get('/visits/sales'),
   getByDate: (date, type) => api.get(`/visits/${type}`, { params: { date } }),
+  getPlanVisits: (params) => api.get('/visits/plan', { params }),
+  submitAbsen: (formData) => api.post('/visits/absen', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  submitVisitAction: (formData) => api.post('/visit-actions', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 // Visit Action API

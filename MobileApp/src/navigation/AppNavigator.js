@@ -6,6 +6,9 @@ import { Text } from 'react-native';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
+import MainMenuScreen from '../screens/MainMenuScreen';
+import AbsenScreen from '../screens/AbsenScreen';
+import MDVisitScreen from '../screens/MDVisitScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import VisitListScreen from '../screens/VisitListScreen';
 import VisitActionScreen from '../screens/VisitActionScreen';
@@ -39,8 +42,8 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
+        name="MainMenu"
+        component={MainMenuScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>🏠</Text>
@@ -48,11 +51,11 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Visits"
-        component={VisitListScreen}
+        name="Dashboard"
+        component={DashboardScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>📋</Text>
+            <Text style={{ fontSize: 24 }}>📊</Text>
           ),
         }}
       />
@@ -61,7 +64,7 @@ function MainTabs() {
         component={ReportScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>📊</Text>
+            <Text style={{ fontSize: 24 }}>📈</Text>
           ),
         }}
       />
@@ -79,13 +82,22 @@ export default function AppNavigator() {
         }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+        <Stack.Screen 
+          name="Absen" 
+          component={AbsenScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="MDVisit" 
+          component={MDVisitScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen 
           name="VisitAction" 
           component={VisitActionScreen}
-          options={{
-            headerShown: false,
-          }}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

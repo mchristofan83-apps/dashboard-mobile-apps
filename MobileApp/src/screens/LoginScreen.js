@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../services/api';
@@ -30,8 +31,8 @@ export default function LoginScreen({ navigation }) {
       const user = await AsyncStorage.getItem('user');
       
       if (token && user) {
-        // User is already logged in
-        navigation.replace('Main');
+        // User is already logged in - navigate to MainMenu
+        navigation.replace('MainMenu');
       }
     } catch (error) {
       console.error('Error checking login:', error);
@@ -55,8 +56,8 @@ export default function LoginScreen({ navigation }) {
         await AsyncStorage.setItem('token', response.data.token);
         await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // Navigate to main app
-        navigation.replace('Main');
+        // Navigate to MainMenu
+        navigation.replace('MainMenu');
       } else {
         Alert.alert('Error', response.data.message || 'Login failed');
       }
