@@ -25,9 +25,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Add, Edit, Delete, AdminPanelSettings, Person } from '@mui/icons-material';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api';
+import { authAPI } from '../../services/api';
 
 function AuthUserList() {
   const [users, setUsers] = useState([]);
@@ -48,10 +46,7 @@ function AuthUserList() {
 
   const loadUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/auth/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await authAPI.getUsers();
       setUsers(response.data.data);
       setError('');
     } catch (error) {
@@ -92,8 +87,6 @@ function AuthUserList() {
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem('token');
-      
       if (editingUser) {
         // Update user
         const updateData = {
@@ -106,9 +99,7 @@ function AuthUserList() {
           updateData.password = formData.password;
         }
         
-        await axios.put(`${API_URL}/auth/users/${editingUser.id}`, updateData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await authAPI.updateUser(editingUser.id, updateData);
         setSuccess('User updated successfully');
       } else {
         // Create new user
@@ -117,9 +108,7 @@ function AuthUserList() {
           return;
         }
         
-        await axios.post(`${API_URL}/auth/users`, formData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await authAPI.createUser(formData);
         setSuccess('User created successfully');
       }
       
@@ -136,10 +125,7 @@ function AuthUserList() {
   const handleDelete = async (id, username) => {
     if (window.confirm(`Are you sure you want to delete user "${username}"?`)) {
       try {
-        const token = localStorage.getItem('token');
-        await axios.delete(`${API_URL}/auth/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await authAPI.deleteUser(id);
         setSuccess('User deleted successfully');
         loadUsers();
         

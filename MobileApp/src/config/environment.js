@@ -5,11 +5,12 @@ import Constants from 'expo-constants';
 // Windows: ipconfig
 // Mac/Linux: ifconfig or ip addr
 
-// IMPORTANT: Update this IP address to match your computer's local network IP
-const DEV_API_URL = 'http://192.168.0.43:8000/api';
+// IMPORTANT: Update these values or supply environment variables when building.
+// For local/dev use set `DEV_API_URL`; for production set `PROD_API_URL`.
+const DEV_API_URL = process.env.DEV_API_URL || 'http://192.168.0.43:8000/api';
 
-// For production, use your actual server URL
-const PROD_API_URL = 'https://your-production-server.com/api';
+// For production, set `PROD_API_URL` to your server (e.g. https://example.com/api)
+const PROD_API_URL = process.env.PROD_API_URL || 'https://your-production-server.com/api';
 
 // Automatically detect environment
 const ENV = {

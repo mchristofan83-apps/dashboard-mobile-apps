@@ -12,10 +12,12 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production');
     req.user = decoded;
     next();
   } catch (error) {
+    console.log('JWT verification error:', error.message);
+    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     return res.status(401).json({
       success: false,
       message: 'Unauthorized - Invalid token'
