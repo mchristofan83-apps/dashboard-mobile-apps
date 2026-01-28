@@ -1,0 +1,20 @@
+{
+  "development": {
+    "filename": "./database/development.db",
+    "driver": "sqlite3",
+    "options": {}
+  },
+  "production": {
+    "filename": "./database/production.db",
+    "driver": "sqlite3",
+    "options": {
+      "busyTimeout": 10000,
+      "journalMode": "WAL",
+      "synchronous": "NORMAL"
+    }
+  },
+  "test": {
+    "filename": ":memory:",
+    "driver": "sqlite3"
+  }
+}

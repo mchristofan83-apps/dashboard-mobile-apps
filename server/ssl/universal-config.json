@@ -1,0 +1,45 @@
+{
+  "universal": {
+    "type": "cloudflare-origin-universal",
+    "domains": [
+      "gisconnect.online",
+      "*.gisconnect.online",
+      "api.gisconnect.online",
+      "dashboard.gisconnect.online",
+      "server.gisconnect.online"
+    ],
+    "ssl": {
+      "enabled": true,
+      "keyPath": "./ssl/universal.key",
+      "certPath": "./ssl/universal.crt",
+      "type": "cloudflare-origin",
+      "issuer": "Cloudflare",
+      "validity": "15 years",
+      "algorithm": "RSA 2048-bit",
+      "wildcard": true
+    }
+  },
+  "server": {
+    "domain": "server.gisconnect.online",
+    "ssl": {
+      "keyPath": "./ssl/server.key",
+      "certPath": "./ssl/server.crt",
+      "shared": true
+    }
+  },
+  "dashboard": {
+    "domain": "dashboard.gisconnect.online",
+    "ssl": {
+      "keyPath": "./ssl/dashboard.key",
+      "certPath": "./ssl/dashboard.crt",
+      "shared": true
+    }
+  },
+  "api": {
+    "domain": "api.gisconnect.online",
+    "ssl": {
+      "shared": true,
+      "covered": true
+    }
+  }
+}

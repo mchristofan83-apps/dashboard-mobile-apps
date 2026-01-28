@@ -1,86 +1,162 @@
-const { getDatabase, runQuery, getRow, getAllRows } = require('../database/init');
+const db = require('../config/database');
 
 // Get dashboard statistics
 const getDashboardStats = async (req, res) => {
   try {
-    const userDb = getDatabase('datauser');
-    const outletDb = getDatabase('dataoutlet');
-    const visitMdDb = getDatabase('datavisitmd');
-    const visitSalesDb = getDatabase('datavisitsales');
-    const actionDb = getDatabase('visitaction');
-
     // Get counts
-    const totalUsers = await getRow(userDb, 'SELECT COUNT(*) as count FROM datauser', []);
-    const totalOutlets = await getRow(outletDb, 'SELECT COUNT(*) as count FROM dataoutlet', []);
+    const totalUsers = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM datauser', [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const totalOutlets = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM dataoutlet', [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
     
     // MD Visit stats
-    const totalMdVisits = await getRow(visitMdDb, 'SELECT COUNT(*) as count FROM datavisitmd', []);
-    const completedMdVisits = await getRow(visitMdDb, "SELECT COUNT(*) as count FROM datavisitmd WHERE status = 'completed'", []);
-    const scheduledMdVisits = await getRow(visitMdDb, "SELECT COUNT(*) as count FROM datavisitmd WHERE status = 'scheduled'", []);
+    const totalMdVisits = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM datavisitmd', [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const completedMdVisits = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM datavisitmd WHERE status = 'completed'", [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const scheduledMdVisits = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM datavisitmd WHERE status = 'scheduled'", [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
     
     // Sales Visit stats
-    const totalSalesVisits = await getRow(visitSalesDb, 'SELECT COUNT(*) as count FROM datavisitsales', []);
-    const completedSalesVisits = await getRow(visitSalesDb, "SELECT COUNT(*) as count FROM datavisitsales WHERE status = 'completed'", []);
-    const scheduledSalesVisits = await getRow(visitSalesDb, "SELECT COUNT(*) as count FROM datavisitsales WHERE status = 'scheduled'", []);
+    const totalSalesVisits = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM datavisitsales', [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const completedSalesVisits = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM datavisitsales WHERE status = 'completed'", [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const scheduledSalesVisits = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM datavisitsales WHERE status = 'scheduled'", [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
     // Visit actions
-    const totalVisitActions = await getRow(actionDb, 'SELECT COUNT(*) as count FROM visitaction', []);
-    const completedActions = await getRow(actionDb, 'SELECT COUNT(*) as count FROM visitaction WHERE checkout_time IS NOT NULL', []);
+    const totalVisitActions = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM visitaction', [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
+    const completedActions = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM visitaction WHERE checkout_time IS NOT NULL", [], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
     // Get recent activities
-    const recentActions = await getAllRows(
-      actionDb,
-      'SELECT * FROM visitaction ORDER BY created_at DESC LIMIT 10',
-      []
-    );
+    const recentActions = await new Promise((resolve, reject) => {
+      db.all('SELECT * FROM visitaction ORDER BY created_at DESC LIMIT 10', [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
 
     // Get visits by date (last 7 days)
-    const mdVisitsByDate = await getAllRows(
-      visitMdDb,
-      `SELECT DATE(datevisit) as date, COUNT(*) as count 
-       FROM datavisitmd 
-       WHERE datevisit >= DATE('now', '-7 days')
-       GROUP BY DATE(datevisit)
-       ORDER BY date`,
-      []
-    );
+    const mdVisitsByDate = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT DATE(datevisit) as date, COUNT(*) as count 
+         FROM datavisitmd 
+         WHERE datevisit >= DATE('now', '-7 days')
+         GROUP BY DATE(datevisit)
+         ORDER BY date`,
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        }
+      );
+    });
 
-    const salesVisitsByDate = await getAllRows(
-      visitSalesDb,
-      `SELECT DATE(datevisit) as date, COUNT(*) as count 
-       FROM datavisitsales 
-       WHERE datevisit >= DATE('now', '-7 days')
-       GROUP BY DATE(datevisit)
-       ORDER BY date`,
-      []
-    );
+    const salesVisitsByDate = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT DATE(datevisit) as date, COUNT(*) as count 
+         FROM datavisitsales 
+         WHERE datevisit >= DATE('now', '-7 days')
+         GROUP BY DATE(datevisit)
+         ORDER BY date`,
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        }
+      );
+    });
 
     // Get visits by warehouse
-    const mdVisitsByWarehouse = await getAllRows(
-      visitMdDb,
-      `SELECT warehouse, COUNT(*) as count 
-       FROM datavisitmd 
-       GROUP BY warehouse`,
-      []
-    );
+    const mdVisitsByWarehouse = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT warehouse, COUNT(*) as count 
+         FROM datavisitmd 
+         GROUP BY warehouse`,
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        }
+      );
+    });
 
-    const salesVisitsByWarehouse = await getAllRows(
-      visitSalesDb,
-      `SELECT warehouse, COUNT(*) as count 
-       FROM datavisitsales 
-       GROUP BY warehouse`,
-      []
-    );
+    const salesVisitsByWarehouse = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT warehouse, COUNT(*) as count 
+         FROM datavisitsales 
+         GROUP BY warehouse`,
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        }
+      );
+    });
 
     // Get POSM status distribution
-    const posmStats = await getAllRows(
-      actionDb,
-      `SELECT status_posm, COUNT(*) as count 
-       FROM visitaction 
-       WHERE status_posm IS NOT NULL
-       GROUP BY status_posm`,
-      []
-    );
+    const posmStats = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT status_posm, COUNT(*) as count 
+         FROM visitaction 
+         WHERE status_posm IS NOT NULL
+         GROUP BY status_posm`,
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        }
+      );
+    });
 
     res.json({
       success: true,
@@ -122,54 +198,57 @@ const getUserDashboard = async (req, res) => {
   try {
     const { username } = req.user;
 
-    const visitMdDb = getDatabase('datavisitmd');
-    const visitSalesDb = getDatabase('datavisitsales');
-    const actionDb = getDatabase('visitaction');
-
     // Get user's visits
-    const myMdVisits = await getAllRows(
-      visitMdDb,
-      'SELECT * FROM datavisitmd WHERE username = ? ORDER BY datevisit DESC LIMIT 10',
-      [username]
-    );
+    const myMdVisits = await new Promise((resolve, reject) => {
+      db.all('SELECT * FROM datavisitmd WHERE username = ? ORDER BY datevisit DESC LIMIT 10', [username], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
 
-    const mySalesVisits = await getAllRows(
-      visitSalesDb,
-      'SELECT * FROM datavisitsales WHERE username = ? ORDER BY datevisit DESC LIMIT 10',
-      [username]
-    );
+    const mySalesVisits = await new Promise((resolve, reject) => {
+      db.all('SELECT * FROM datavisitsales WHERE username = ? ORDER BY datevisit DESC LIMIT 10', [username], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
 
     // Get user's visit actions
-    const myActions = await getAllRows(
-      actionDb,
-      'SELECT * FROM visitaction WHERE username = ? ORDER BY created_at DESC LIMIT 10',
-      [username]
-    );
+    const myActions = await new Promise((resolve, reject) => {
+      db.all('SELECT * FROM visitaction WHERE username = ? ORDER BY created_at DESC LIMIT 10', [username], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
 
     // Get user's stats
-    const myMdVisitsCount = await getRow(
-      visitMdDb,
-      'SELECT COUNT(*) as count FROM datavisitmd WHERE username = ?',
-      [username]
-    );
+    const myMdVisitsCount = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM datavisitmd WHERE username = ?', [username], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
-    const mySalesVisitsCount = await getRow(
-      visitSalesDb,
-      'SELECT COUNT(*) as count FROM datavisitsales WHERE username = ?',
-      [username]
-    );
+    const mySalesVisitsCount = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM datavisitsales WHERE username = ?', [username], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
-    const myCompletedVisits = await getRow(
-      actionDb,
-      'SELECT COUNT(*) as count FROM visitaction WHERE username = ? AND checkout_time IS NOT NULL',
-      [username]
-    );
+    const myCompletedVisits = await new Promise((resolve, reject) => {
+      db.get('SELECT COUNT(*) as count FROM visitaction WHERE username = ? AND checkout_time IS NOT NULL', [username], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
-    const myTodayVisits = await getRow(
-      actionDb,
-      "SELECT COUNT(*) as count FROM visitaction WHERE username = ? AND DATE(created_at) = DATE('now')",
-      [username]
-    );
+    const myTodayVisits = await new Promise((resolve, reject) => {
+      db.get("SELECT COUNT(*) as count FROM visitaction WHERE username = ? AND DATE(created_at) = DATE('now')", [username], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
     res.json({
       success: true,

@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'gis2026-secure-jwt-secret-key');
     req.user = decoded;
     next();
   } catch (error) {

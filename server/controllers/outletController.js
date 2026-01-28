@@ -1,6 +1,34 @@
-const { getDatabase, runQuery, getRow, getAllRows } = require('../database/init');
+const db = require('../config/database');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
+
+// Helper functions for database operations
+const runQuery = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.run(query, params, function(err) {
+      if (err) reject(err);
+      else resolve({ lastID: this.lastID, changes: this.changes });
+    });
+  });
+};
+
+const getRow = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.get(query, params, (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+const getAllRows = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
 
 // Get all outlets
 const getAllOutlets = async (req, res) => {
@@ -27,8 +55,7 @@ const getAllOutlets = async (req, res) => {
 
     query += ' ORDER BY created_at DESC';
 
-    const db = getDatabase('dataoutlet');
-    const outlets = await getAllRows(db, query, params);
+    const outlets = await getAllRows(query, params);
 
     res.json({
       success: true,
@@ -49,9 +76,7 @@ const getOutletById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const db = getDatabase('dataoutlet');
     const outlet = await getRow(
-      db,
       'SELECT * FROM dataoutlet WHERE id = ?',
       [id]
     );
@@ -89,11 +114,8 @@ const addOutlet = async (req, res) => {
       });
     }
 
-    const db = getDatabase('dataoutlet');
-    
     // Check if outlet ID already exists
     const existingOutlet = await getRow(
-      db,
       'SELECT * FROM dataoutlet WHERE idoutlet = ?',
       [idoutlet]
     );
@@ -106,7 +128,6 @@ const addOutlet = async (req, res) => {
     }
 
     const result = await runQuery(
-      db,
       'INSERT INTO dataoutlet (username, amo, warehouse, idoutlet, namaoutlet, alamatoutlet, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [username, amo, warehouse, idoutlet, namaoutlet, alamatoutlet, latitude, longitude]
     );
@@ -132,11 +153,7 @@ const editOutlet = async (req, res) => {
     const { id } = req.params;
     const { username, amo, warehouse, idoutlet, namaoutlet, alamatoutlet, latitude, longitude } = req.body;
 
-    const db = getDatabase('dataoutlet');
-    
-    // Check if outlet exists
     const outlet = await getRow(
-      db,
       'SELECT * FROM dataoutlet WHERE id = ?',
       [id]
     );
@@ -148,20 +165,9 @@ const editOutlet = async (req, res) => {
       });
     }
 
-    const result = await runQuery(
-      db,
+    await runQuery(
       'UPDATE dataoutlet SET username = ?, amo = ?, warehouse = ?, idoutlet = ?, namaoutlet = ?, alamatoutlet = ?, latitude = ?, longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [
-        username || outlet.username,
-        amo || outlet.amo,
-        warehouse || outlet.warehouse,
-        idoutlet || outlet.idoutlet,
-        namaoutlet || outlet.namaoutlet,
-        alamatoutlet || outlet.alamatoutlet,
-        latitude || outlet.latitude,
-        longitude || outlet.longitude,
-        id
-      ]
+      [username || outlet.username, amo || outlet.amo, warehouse || outlet.warehouse, idoutlet || outlet.idoutlet, namaoutlet || outlet.namaoutlet, alamatoutlet || outlet.alamatoutlet, latitude || outlet.latitude, longitude || outlet.longitude, id]
     );
 
     res.json({
@@ -183,11 +189,7 @@ const deleteOutlet = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const db = getDatabase('dataoutlet');
-    
-    // Check if outlet exists
     const outlet = await getRow(
-      db,
       'SELECT * FROM dataoutlet WHERE id = ?',
       [id]
     );
@@ -200,7 +202,6 @@ const deleteOutlet = async (req, res) => {
     }
 
     await runQuery(
-      db,
       'DELETE FROM dataoutlet WHERE id = ?',
       [id]
     );
@@ -242,7 +243,6 @@ const uploadExcel = async (req, res) => {
       });
     }
 
-    const db = getDatabase('dataoutlet');
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
@@ -267,7 +267,6 @@ const uploadExcel = async (req, res) => {
 
       try {
         await runQuery(
-          db,
           'INSERT OR REPLACE INTO dataoutlet (username, amo, warehouse, idoutlet, namaoutlet, alamatoutlet, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
           [username, amo, warehouse, idoutlet, namaoutlet, alamatoutlet, parseFloat(latitude), parseFloat(longitude)]
         );

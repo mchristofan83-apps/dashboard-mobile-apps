@@ -1,0 +1,26 @@
+name = "dashboard-api-worker"
+main = "cloudflare-worker-simple.js"
+compatibility_date = "2024-01-26"
+
+[[kv_namespaces]]
+binding = "GIS2026_KV"
+id = "af106ee16e7941f6a706a004410db88e"
+
+[env.production]
+routes = [
+  { pattern = "api.gisconnect.online/*", zone_name = "gisconnect.online" },
+  { pattern = "dashboard.gisconnect.online/api/*", zone_name = "gisconnect.online" },
+  { pattern = "server.gisconnect.online/*", zone_name = "gisconnect.online" }
+]
+vars = { ORIGIN_SERVER = "https://server.gisconnect.online", CORS_ORIGIN = "https://dashboard.gisconnect.online", API_BASE_URL = "https://api.gisconnect.online", DASHBOARD_URL = "https://dashboard.gisconnect.online" }
+
+[env.staging]
+routes = [
+  { pattern = "staging-api.gisconnect.online/*", zone_name = "gisconnect.online" },
+  { pattern = "staging-dashboard.gisconnect.online/api/*", zone_name = "gisconnect.online" },
+  { pattern = "staging-server.gisconnect.online/*", zone_name = "gisconnect.online" }
+]
+vars = { ORIGIN_SERVER = "https://staging-server.gisconnect.online", CORS_ORIGIN = "https://staging-dashboard.gisconnect.online", API_BASE_URL = "https://staging-api.gisconnect.online", DASHBOARD_URL = "https://staging-dashboard.gisconnect.online" }
+
+[triggers]
+crons = ["0 */6 * * *"]

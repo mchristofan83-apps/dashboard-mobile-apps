@@ -1,12 +1,13 @@
 {
   "expo": {
-    "name": "Dashboard Mobile App",
-    "slug": "dashboard-mobile-app",
+    "name": "GIS Connect Mobile",
+    "slug": "gisconnect-mobile",
     "version": "1.0.0",
-    "sdkVersion": "54.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -14,20 +15,36 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.gisconnect.mobile",
+      "buildNumber": "1.0.0",
       "supportsTablet": true,
-      "bundleIdentifier": "com.dashboard.mobileapp"
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to location for visit tracking",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to location for real-time tracking",
+        "NSCameraUsageDescription": "This app needs camera access for documentation photos",
+        "NSMicrophoneUsageDescription": "This app needs microphone access for voice notes",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access for documentation"
+      }
     },
     "android": {
+      "package": "com.gisconnect.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.dashboard.mobileapp",
       "permissions": [
-        "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "RECORD_AUDIO",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_NETWORK_STATE",
+        "INTERNET",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -36,12 +53,52 @@
       ]
     },
     "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow GIS Connect to access your camera"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GIS Connect to use your location"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/sounds/notification.wav"
+          ]
+        }
+      ],
+      [
+        "expo-secure-store"
+      ],
+      [
+        "expo-sqlite"
+      ]
+    ],
     "extra": {
       "eas": {
-        "projectId": "ecc4be3e-9145-4883-a656-e42520bd03fb"
+        "projectId": "bbd0fa10-c861-4218-9276-482dd1583750"
       }
     },
-    "owner": "mariochristofan83"
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/gisconnect-mobile-project"
+    },
+    "cli": {
+      "appVersionSource": "local"
+    }
   }
 }

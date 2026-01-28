@@ -1,0 +1,28 @@
+{
+  "socket": {
+    "cors": {
+      "origin": "https://dashboard.gisconnect.online",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    "transports": [
+      "websocket",
+      "polling"
+    ]
+  },
+  "sync": {
+    "enabled": true,
+    "interval": 60000,
+    "batchSize": 100
+  },
+  "events": [
+    "user:connected",
+    "user:disconnected",
+    "data:updated",
+    "visit:created",
+    "visit:updated",
+    "outlet:updated"
+  ]
+}

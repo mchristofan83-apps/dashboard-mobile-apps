@@ -1,0 +1,22 @@
+{
+  "dashboard": {
+    "domain": "dashboard.gisconnect.online",
+    "ssl": {
+      "enabled": true,
+      "keyPath": "./ssl/dashboard.key",
+      "certPath": "./ssl/dashboard.crt",
+      "type": "cloudflare-origin",
+      "issuer": "Cloudflare",
+      "validity": "15 years",
+      "algorithm": "RSA 2048-bit"
+    }
+  },
+  "api": {
+    "domain": "api.gisconnect.online",
+    "ssl": {
+      "enabled": true,
+      "shared": true,
+      "type": "cloudflare-origin"
+    }
+  }
+}

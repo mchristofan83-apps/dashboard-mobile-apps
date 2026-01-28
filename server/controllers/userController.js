@@ -1,6 +1,34 @@
-const { getDatabase, runQuery, getRow, getAllRows } = require('../database/init');
+const db = require('../config/database');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
+
+// Helper functions for database operations
+const runQuery = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.run(query, params, function(err) {
+      if (err) reject(err);
+      else resolve({ lastID: this.lastID, changes: this.changes });
+    });
+  });
+};
+
+const getRow = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.get(query, params, (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+const getAllRows = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -27,8 +55,7 @@ const getAllUsers = async (req, res) => {
 
     query += ' ORDER BY created_at DESC';
 
-    const db = getDatabase('datauser');
-    const users = await getAllRows(db, query, params);
+    const users = await getAllRows(query, params);
 
     res.json({
       success: true,
@@ -49,9 +76,7 @@ const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const db = getDatabase('datauser');
     const user = await getRow(
-      db,
       'SELECT * FROM datauser WHERE id = ?',
       [id]
     );
@@ -89,9 +114,7 @@ const addUser = async (req, res) => {
       });
     }
 
-    const db = getDatabase('datauser');
     const result = await runQuery(
-      db,
       'INSERT INTO datauser (username, nama, jabatan, amo, warehouse) VALUES (?, ?, ?, ?, ?)',
       [username, nama, jabatan, amo, warehouse]
     );
@@ -117,11 +140,8 @@ const editUser = async (req, res) => {
     const { id } = req.params;
     const { username, nama, jabatan, amo, warehouse } = req.body;
 
-    const db = getDatabase('datauser');
-    
     // Check if user exists
     const user = await getRow(
-      db,
       'SELECT * FROM datauser WHERE id = ?',
       [id]
     );
@@ -134,7 +154,6 @@ const editUser = async (req, res) => {
     }
 
     await runQuery(
-      db,
       'UPDATE datauser SET username = ?, nama = ?, jabatan = ?, amo = ?, warehouse = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [username || user.username, nama || user.nama, jabatan || user.jabatan, amo || user.amo, warehouse || user.warehouse, id]
     );
@@ -158,11 +177,8 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const db = getDatabase('datauser');
-    
     // Check if user exists
     const user = await getRow(
-      db,
       'SELECT * FROM datauser WHERE id = ?',
       [id]
     );
@@ -175,7 +191,6 @@ const deleteUser = async (req, res) => {
     }
 
     await runQuery(
-      db,
       'DELETE FROM datauser WHERE id = ?',
       [id]
     );
@@ -208,7 +223,6 @@ const uploadExcel = async (req, res) => {
     await workbook.xlsx.readFile(req.file.path);
     const worksheet = workbook.getWorksheet(1);
 
-    const db = getDatabase('datauser');
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
@@ -230,7 +244,6 @@ const uploadExcel = async (req, res) => {
 
       try {
         await runQuery(
-          db,
           'INSERT INTO datauser (username, nama, jabatan, amo, warehouse) VALUES (?, ?, ?, ?, ?)',
           [username, nama, jabatan, amo, warehouse]
         );

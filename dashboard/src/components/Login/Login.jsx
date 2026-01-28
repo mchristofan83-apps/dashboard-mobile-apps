@@ -73,12 +73,13 @@ function Login() {
               required
               fullWidth
               label="Username"
+              name="username"
+              autoComplete="off"
               autoFocus
               value={credentials.username}
-              onChange={(e) =>
-                setCredentials({ ...credentials, username: e.target.value })
-              }
+              onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
               disabled={loading}
+              inputProps={{ autoComplete: 'new-password' }}
             />
             <TextField
               margin="normal"
@@ -86,11 +87,14 @@ function Login() {
               fullWidth
               label="Password"
               type="password"
+              name="password"
+              autoComplete="new-password"
               value={credentials.password}
               onChange={(e) =>
                 setCredentials({ ...credentials, password: e.target.value })
               }
               disabled={loading}
+              inputProps={{ autoComplete: 'new-password' }}
             />
             <Button
               type="submit"

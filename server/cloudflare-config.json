@@ -1,0 +1,16 @@
+{
+  "apiToken": "",
+  "accountId": "",
+  "zoneId": "",
+  "domain": "gisconnect.online",
+  "subdomains": {
+    "dashboard": "dashboard.gisconnect.online",
+    "api": "api.gisconnect.online",
+    "server": "server.gisconnect.online"
+  },
+  "kvNamespace": "af106ee16e7941f6a706a004410db88e",
+  "worker": {
+    "name": "dashboard-api-worker",
+    "script": "./cloudflare/worker.js"
+  }
+}

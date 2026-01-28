@@ -7,7 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:production": "vite build --mode production",
+    "build:staging": "vite build --mode staging",
+    "deploy:production": "npm run build:production && wrangler pages deploy",
+    "deploy:staging": "npm run build:staging && wrangler pages deploy --env staging",
+    "preview:production": "npm run build:production && vite preview --mode production",
+    "analyze": "npm run build:production && npx vite-bundle-analyzer dist"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",

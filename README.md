@@ -2,261 +2,362 @@
 
 A comprehensive monitoring, controlling, and reporting system with web dashboard and mobile applications for managing MD and Sales visits with GPS tracking, photo documentation, and real-time synchronization.
 
-## 🚀 Features
+## 🤖 AI Integration (Windsurf Anthropic AI)
+
+This system is enhanced with **Windsurf Anthropic AI** integration for intelligent features:
+
+- **AI-Powered Analytics**: Advanced data analysis and predictive insights
+- **Smart Route Optimization**: AI-optimized visit scheduling and route planning
+- **Automated Reporting**: AI-generated reports with natural language summaries
+- **Anomaly Detection**: AI-powered detection of unusual patterns in visit data
+- **Voice Assistant**: Natural language processing for mobile app interactions
+- **Image Recognition**: AI analysis of visit photos for compliance checking
+- **Predictive Analytics**: Forecast visit completion rates and performance metrics
+
+## Features
 
 ### Web Dashboard
+
 - **Authentication System**: Secure login with JWT tokens
 - **Main Dashboard**: Real-time statistics with interactive graphs
 - **User Management**: CRUD operations with Excel bulk upload
 - **Outlet Management**: Manage outlets with GPS coordinates
 - **Visit Scheduling**: Schedule MD and Sales visits
-- **Visit Tracking**: Real-time visit monitoring with GPS check-in/check-out
-- **Photo Documentation**: Before/after visit photos
-- **Reporting**: Daily reports with Excel export
-- **Real-time Sync**: Live data updates via WebSocket
-- **Scheduled Sync**: Automatic backup sync at 12:00 & 18:00
+- **Visit Tracking**: Real-time GPS tracking and photo documentation
+- **Reports**: Comprehensive reporting with data visualization
 
-### Mobile Apps (React Native)
-- **Cross-platform**: Single codebase for iOS and Android
-- **GPS Tracking**: Automatic location capture on check-in
-- **Camera Integration**: Capture before/after photos
-- **Offline Support**: Work without internet connection
-- **Real-time Sync**: Live data synchronization with backend
-- **Visit Management**: Complete visit workflow on mobile
+### Mobile Application
 
-## 📋 Prerequisites
+- **Authentication**: Secure JWT-based login with session persistence
+- **Visit Management**: View and manage assigned visits
+- **GPS Check-in/Check-out**: Location-based visit tracking
+- **Photo Documentation**: Capture and upload visit photos
+- **Offline Support**: Works offline with data synchronization
+- **Real-time Sync**: Automatic data synchronization with server
 
-- Node.js (v14 or higher)
+### Backend Server
+
+- **RESTful API**: Complete API for dashboard and mobile apps
+- **JWT Authentication**: Secure token-based authentication
+- **Database**: Integrated SQLite database with optimized queries
+- **File Upload**: Handle Excel uploads and image uploads
+- **Rate Limiting**: API protection with rate limiting
+- **Security**: Input sanitization and SQL injection protection
+
+## Tech Stack
+
+### Web Dashboard Tech
+
+- **Frontend**: React 18 with Material-UI (MUI) v5
+- **HTTP Client**: Axios with interceptors and retry logic
+- **Charts**: Recharts for interactive data visualization
+- **Build Tool**: Vite with hot module replacement
+- **Real-time**: Socket.IO client for live updates
+- **State Management**: React Hooks and Context API
+- **Routing**: React Router v6 with protected routes
+
+### Mobile App Tech
+
+- **Framework**: React Native 0.72 with Expo SDK ~54.0.30
+- **Navigation**: React Navigation v6 (Stack + Bottom Tabs)
+- **Storage**: AsyncStorage + SQLite (expo-sqlite) for offline support
+- **HTTP Client**: Axios with interceptors and Cloudflare fallback
+- **UI Components**: Custom components with React Native styling
+- **Location Services**: Expo Location with GPS tracking
+- **Camera**: Expo Image Picker for photo documentation
+- **Real-time**: Socket.IO client for live updates
+- **Biometric Auth**: Expo Secure Store for fingerprint/Face ID
+
+### Backend Server Tech
+
+- **Runtime**: Node.js v25.3.0 with Express.js v4.18.2
+- **Database**: SQLite3 v5.1.6 with multiple database files
+- **Authentication**: JWT v9.0.2 with bcryptjs v2.4.3
+- **File Processing**: Multer v1.4.5 for uploads, ExcelJS v4.4.0 for Excel files
+- **Security**: Helmet v7.0.0, CORS v2.8.5, express-rate-limit v7.5.1
+- **Real-time**: Socket.IO v4.7.2 for WebSocket connections
+- **Development**: Nodemon v3.0.1 for auto-restart
+- **Cloudflare Integration**: KV storage and Workers API
+- **Process Management**: PM2 support with ecosystem config
+- **SSL**: HTTPS support with certificate management
+
+## Prerequisites
+
+- Node.js (v16 or higher, recommended v25.3.0+)
 - npm or yarn
-- React Native CLI (for mobile development)
-- Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
+- Git
+- Expo CLI (for mobile development)
+- Android Studio / Xcode (for mobile testing)
+- Cloudflare account (for production deployment)
 
-## 🛠️ Installation
+## Quick Start
 
-### 1. Clone the repository
+### 1. Clone and Install Dependencies
+
 ```bash
+# Clone the repository
 git clone <repository-url>
-cd apps
-```
+cd dashboard-mobile-apps
 
-### 2. Install dependencies
-```bash
+# Install server dependencies
+cd server
+npm install
+
+# Install dashboard dependencies
+cd ../dashboard
+npm install
+
+# Install mobile app dependencies
+cd ../MobileApp
 npm install
 ```
 
-### 3. Configure environment variables
-Create a `.env` file in the root directory:
-```env
-PORT=3000
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-DB_PATH=./databases
-UPLOAD_PATH=./uploads
-EXCEL_UPLOAD_PATH=./uploads/excel
-IMAGE_UPLOAD_PATH=./uploads/images
-SYNC_SCHEDULE_1=0 12 * * *
-SYNC_SCHEDULE_2=0 18 * * *
-DEFAULT_ADMIN_USERNAME=admin-gis
-DEFAULT_ADMIN_PASSWORD=gis2026
-NODE_ENV=development
+### 2. Environment Configuration
+
+```bash
+# Server environment
+cd server
+cp .env.example .env
+# Edit .env with your configuration
+
+# Dashboard environment
+cd ../dashboard
+cp .env.production.example .env.production
+# Edit environment variables as needed
 ```
 
-### 4. Start the backend server
+### 3. Initialize Database
+
 ```bash
+cd server
+npm run init-schema
+```
+
+### 4. Start Development Servers
+
+```bash
+# Start the backend server (Terminal 1)
+cd server
+npm run dev
+
+# Start the dashboard (Terminal 2)
+cd ../dashboard
+npm run dev
+
+# Start the mobile app (Terminal 3)
+cd ../MobileApp
 npm start
 ```
 
-The server will start on `http://localhost:3000`
+## 🌐 Deployment
 
-## 📁 Project Structure
+### Production Deployment with Cloudflare
 
+1. **Server Deployment**:
+
+   ```bash
+   cd server
+   npm run pm2:start
+   ```
+
+2. **Dashboard Deployment**:
+
+   ```bash
+   cd dashboard
+   npm run build:production
+   npm run deploy:production
+   ```
+
+3. **Mobile App Build**:
+
+   ```bash
+   cd MobileApp
+   npm run build:android
+   npm run build:ios
+   ```
+
+### Subdomain Configuration
+
+- **Dashboard**: `dashboard.gisconnect.online`
+- **API**: `api.gisconnect.online`
+- **Server**: `server.gisconnect.online`
+
+## 🔧 Configuration
+
+### Server Configuration (.env)
+
+```env
+NODE_ENV=production
+PORT=8000
+HTTPS_PORT=8443
+DB_PATH=./database/production.db
+JWT_SECRET=your-jwt-secret
+CLOUDFLARE_API_TOKEN=your-token
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+CLOUDFLARE_KV_NAMESPACE=your-kv-namespace
 ```
-apps/
-├── server/
-│   ├── controllers/       # Business logic
-│   ├── database/          # Database schemas and initialization
-│   ├── middleware/        # Authentication middleware
-│   ├── routes/           # API routes
-│   ├── utils/            # Utility functions
-│   └── index.js          # Main server file
-├── dashboard/            # React web dashboard (to be created)
-├── mobile-app/          # React Native mobile app (to be created)
-├── uploads/             # Uploaded files (images, excel)
-├── databases/           # SQLite database files
-├── .env                 # Environment variables
-├── .gitignore          # Git ignore file
-├── package.json        # Dependencies
-├── README.md           # This file
-└── TODO.md            # Development progress
-```
 
-## 🗄️ Database Schema
+### Mobile App Configuration
 
-### Tables:
-1. **menulogin** - User authentication
-2. **datauser** - User information (nama, jabatan, amo, warehouse)
-3. **dataoutlet** - Outlet details with GPS coordinates
-4. **datavisitmd** - MD visit schedules
-5. **datavisitsales** - Sales visit schedules
-6. **visitaction** - Visit tracking with GPS and photos
-7. **synclog** - Synchronization activity logs
+The mobile app automatically detects environment:
 
-## 🔌 API Endpoints
+- **Development**: Uses local server
+- **Production**: Uses Cloudflare API
+- **Staging**: Uses staging subdomain
+
+## 📱 Features in Detail
+
+### Real-time Synchronization
+
+- Live updates across all platforms
+- Offline support with automatic sync
+- Conflict resolution and data integrity
+- Cloudflare KV for distributed caching
+
+### Security Features
+
+- JWT-based authentication
+- Role-based access control
+- Input validation and sanitization
+- Rate limiting and DDoS protection
+- SSL/TLS encryption
+- Biometric authentication (mobile)
+
+### AI-Powered Features
+
+- Predictive analytics for visit planning
+- Smart route optimization
+- Automated report generation
+- Image recognition for compliance
+- Natural language processing
+- Anomaly detection
+
+## 📊 Database Schema
+
+The system uses SQLite with the following tables:
+
+- `menulogin` - Authentication users
+- `datauser` - User information
+- `dataoutlet` - Outlet/Store data
+- `datavisitmd` - MD visit schedules
+- `datavisitsales` - Sales visit schedules
+- `visitaction` - Visit actions and check-ins
+- `synclog` - Synchronization logs
+
+## 🚀 API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/login` - User login
-- `POST /api/auth/users` - Add user (admin only)
-- `PUT /api/auth/users/:id` - Edit user (admin only)
-- `DELETE /api/auth/users/:id` - Delete user (admin only)
+- `GET /api/auth/users` - Get auth users (admin)
+- `POST /api/auth/users` - Create auth user (admin)
 
-### User Management
+### Users
+
 - `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
-- `POST /api/users` - Add user (admin only)
-- `PUT /api/users/:id` - Edit user (admin only)
-- `DELETE /api/users/:id` - Delete user (admin only)
-- `POST /api/users/upload-excel` - Bulk upload via Excel (admin only)
+- `POST /api/users` - Create user
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
 
-### Outlet Management
-- `GET /api/outlets` - Get all outlets
-- `GET /api/outlets/:id` - Get outlet by ID
-- `POST /api/outlets` - Add outlet (admin only)
-- `PUT /api/outlets/:id` - Edit outlet (admin only)
-- `DELETE /api/outlets/:id` - Delete outlet (admin only)
-- `POST /api/outlets/upload-excel` - Bulk upload via Excel (admin only)
+### Visits
 
-### Visit Scheduling
-- `GET /api/visits/md` - Get MD visits
-- `POST /api/visits/md` - Add MD visit (admin only)
-- `PUT /api/visits/md/:id` - Edit MD visit (admin only)
-- `DELETE /api/visits/md/:id` - Delete MD visit (admin only)
-- `POST /api/visits/md/upload-excel` - Bulk upload MD visits (admin only)
-- `GET /api/visits/sales` - Get Sales visits
-- `POST /api/visits/sales` - Add Sales visit (admin only)
-- `PUT /api/visits/sales/:id` - Edit Sales visit (admin only)
-- `DELETE /api/visits/sales/:id` - Delete Sales visit (admin only)
-- `POST /api/visits/sales/upload-excel` - Bulk upload Sales visits (admin only)
-
-### Visit Actions
-- `POST /api/visit-actions/start` - Start visit
-- `POST /api/visit-actions/checkin` - Check-in with GPS
-- `POST /api/visit-actions/upload-photo` - Upload documentation photo
-- `POST /api/visit-actions/update-status` - Update POSM status
-- `POST /api/visit-actions/checkout` - Check-out
-- `GET /api/visit-actions` - Get all visit actions
-- `GET /api/visit-actions/:id` - Get visit action by ID
-- `GET /api/visit-actions/user/:username` - Get user's visit actions
+- `GET /api/visits` - Get visits
+- `POST /api/visits` - Create visit
+- `PUT /api/visits/:id` - Update visit
+- `POST /api/visit-actions/checkin` - Check-in to visit
 
 ### Dashboard
-- `GET /api/dashboard/stats` - Get global statistics (admin only)
+
+- `GET /api/dashboard/stats` - Get dashboard statistics
 - `GET /api/dashboard/my-dashboard` - Get user dashboard
 
-### Reports
-- `GET /api/reports/daily` - Get daily report
-- `GET /api/reports/export` - Export report to Excel
-- `GET /api/reports/summary` - Get report summary
-
 ### Sync
-- `POST /api/sync/trigger` - Trigger manual sync (admin only)
-- `GET /api/sync/logs` - Get sync logs (admin only)
 
-## 🔐 Default Credentials
+- `POST /api/sync/trigger` - Manual sync (admin)
+- `GET /api/sync/logs` - Get sync logs (admin)
+- `POST /api/sync/cloudflare` - Cloudflare sync (admin)
 
-- **Username**: `admin-gis`
-- **Password**: `gis2026`
+## 🛠️ Development
 
-⚠️ **Important**: Change these credentials in production!
+### Code Structure
 
-## 🕐 Scheduled Synchronization
-
-The system automatically performs data synchronization at:
-- **12:00 PM** (noon)
-- **6:00 PM** (18:00)
-
-You can modify these schedules in the `.env` file using cron syntax.
-
-## 📱 Mobile App Development
-
-### Initialize React Native project
-```bash
-npx react-native init MobileApp
-cd MobileApp
+```text
+apps/
+├── server/                 # Backend API server
+│   ├── controllers/        # Route controllers
+│   ├── routes/            # API routes
+│   ├── middleware/        # Express middleware
+│   ├── database/          # Database files and schema
+│   ├── utils/             # Utility functions
+│   └── socket/            # Socket.IO handlers
+├── dashboard/             # Web dashboard
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── services/      # API services
+│   │   └── config/        # Configuration
+└── MobileApp/             # React Native app
+    ├── src/
+    │   ├── screens/       # App screens
+    │   ├── services/      # API and utility services
+    │   └── config/        # Environment configuration
 ```
 
-### Install dependencies
-```bash
-npm install @react-navigation/native @react-navigation/stack
-npm install react-native-maps react-native-image-picker
-npm install @react-native-async-storage/async-storage
-npm install socket.io-client axios
-```
+### Testing
 
-### Run on Android
 ```bash
-npx react-native run-android
-```
+# Server tests
+cd server
+npm test
 
-### Run on iOS
-```bash
-cd ios && pod install && cd ..
-npx react-native run-ios
-```
-
-## 🌐 Web Dashboard Development
-
-### Initialize React app
-```bash
-npx create-react-app dashboard
+# Dashboard tests  
 cd dashboard
+npm test
+
+# Mobile app tests
+cd MobileApp
+npm test
 ```
 
-### Install dependencies
-```bash
-npm install react-router-dom axios
-npm install chart.js react-chartjs-2
-npm install @mui/material @emotion/react @emotion/styled
-npm install socket.io-client
-```
+## 📈 Monitoring & Analytics
 
-### Start development server
-```bash
-npm start
-```
+### Built-in Monitoring
 
-## 🧪 Testing
+- Health check endpoints
+- Performance metrics
+- Error tracking
+- User activity logs
+- Sync status monitoring
 
-### Test API with curl
-```bash
-# Login
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin-gis","password":"gis2026"}'
+### AI Analytics
 
-# Get dashboard stats (replace TOKEN with actual JWT)
-curl -X GET http://localhost:3000/api/dashboard/stats \
-  -H "Authorization: Bearer TOKEN"
-```
-
-## 📝 Development Progress
-
-See [TODO.md](TODO.md) for detailed development progress and next steps.
+- Visit pattern analysis
+- Performance prediction
+- Route optimization suggestions
+- Automated insights generation
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-This project is proprietary software. All rights reserved.
+This project is licensed under the ISC License.
 
-## 👥 Support
+## 🆘 Support
 
-For support, please contact the development team.
+For support and questions:
+
+- Check the documentation
+- Review the API endpoints
+- Check the configuration examples
+- Review the troubleshooting guide
 
 ---
 
-**Built with ❤️ using Node.js, React, and React Native**
+## 🏆 Built With
+
+**Built with ❤️ using React, React Native, Node.js, and enhanced with Windsurf Anthropic AI: AI-Powered Analytics, Smart Route Optimization, Automated Reporting, Anomaly Detection, Voice Assistant, Image Recognition, Predictive Analytics**

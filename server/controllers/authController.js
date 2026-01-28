@@ -1,48 +1,59 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDatabase, runQuery, getRow, getAllRows } = require('../database/init');
 
-// Login
-const login = async (req, res) => {
+// Login with improved security
+exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    
     if (!username || !password) {
       return res.status(400).json({
         success: false,
         message: 'Username and password are required'
       });
     }
-
-    const db = getDatabase('menulogin');
-    const user = await getRow(
-      db,
-      'SELECT * FROM menulogin WHERE username = ?',
-      [username]
-    );
-
+    
+    // Get user from database
+    const db = require('../config/database');
+    const user = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT * FROM menulogin WHERE username = ?',
+        [username],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+    
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password'
+        message: 'Invalid credentials'
       });
     }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
+    
+    // Compare password
+    const isValidPassword = bcrypt.compareSync(password, user.password);
+    
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password'
+        message: 'Invalid credentials'
       });
     }
-
+    
+    // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, username: user.username, access_level: user.access_level },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      { 
+        userId: user.id, 
+        username: user.username, 
+        access_level: user.access_level 
+      },
+      process.env.JWT_SECRET || 'gis2026-secure-jwt-secret-key',
+      { expiresIn: process.env.TOKEN_EXPIRY || '24h' }
     );
-
+    
     res.json({
       success: true,
       message: 'Login successful',
@@ -53,112 +64,97 @@ const login = async (req, res) => {
         access_level: user.access_level
       }
     });
+    
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Login failed',
-      error: error.message
+      message: 'Internal server error'
     });
   }
 };
 
-// Add user
-const addUser = async (req, res) => {
+// Get all users (admin only)
+exports.getAllUsers = async (req, res) => {
   try {
-    const { username, password, access_level } = req.body;
+    const db = require('../config/database');
+    const users = await new Promise((resolve, reject) => {
+      db.all('SELECT id, username, email, access_level, created_at FROM users', (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+    
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
 
+// Add new user (admin only)
+exports.addUser = async (req, res) => {
+  try {
+    const { username, password, email, access_level = 'user' } = req.body;
+    
     if (!username || !password) {
       return res.status(400).json({
         success: false,
         message: 'Username and password are required'
       });
     }
-
-    const db = getDatabase('menulogin');
     
-    // Check if user already exists
-    const existingUser = await getRow(
-      db,
-      'SELECT * FROM menulogin WHERE username = ?',
-      [username]
-    );
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Username already exists'
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await runQuery(
-      db,
-      'INSERT INTO menulogin (username, password, access_level) VALUES (?, ?, ?)',
-      [username, hashedPassword, access_level || 'user']
-    );
-
-    res.status(201).json({
+    const db = require('../config/database');
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    
+    await new Promise((resolve, reject) => {
+      db.run(
+        'INSERT INTO users (username, password, email, access_level) VALUES (?, ?, ?, ?)',
+        [username, hashedPassword, email, access_level],
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.lastID);
+        }
+      );
+    });
+    
+    res.json({
       success: true,
-      message: 'User added successfully',
-      data: { id: result.lastID, username, access_level: access_level || 'user' }
+      message: 'User created successfully'
     });
   } catch (error) {
     console.error('Add user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to add user',
-      error: error.message
+      message: 'Internal server error'
     });
   }
 };
 
-// Edit user
-const editUser = async (req, res) => {
+// Edit user (admin only)
+exports.editUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, password, access_level } = req.body;
-
-    const db = getDatabase('menulogin');
+    const { username, email, access_level } = req.body;
     
-    // Check if user exists
-    const user = await getRow(
-      db,
-      'SELECT * FROM menulogin WHERE id = ?',
-      [id]
-    );
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    let query = 'UPDATE menulogin SET ';
-    const params = [];
-
-    if (username) {
-      query += 'username = ?, ';
-      params.push(username);
-    }
-
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      query += 'password = ?, ';
-      params.push(hashedPassword);
-    }
-
-    if (access_level) {
-      query += 'access_level = ?, ';
-      params.push(access_level);
-    }
-
-    query += 'updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-    params.push(id);
-
-    await runQuery(db, query, params);
-
+    const db = require('../config/database');
+    await new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE users SET username = ?, email = ?, access_level = ? WHERE id = ?',
+        [username, email, access_level, id],
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.changes);
+        }
+      );
+    });
+    
     res.json({
       success: true,
       message: 'User updated successfully'
@@ -167,39 +163,24 @@ const editUser = async (req, res) => {
     console.error('Edit user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user',
-      error: error.message
+      message: 'Internal server error'
     });
   }
 };
 
-// Delete user
-const deleteUser = async (req, res) => {
+// Delete user (admin only)
+exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const db = getDatabase('menulogin');
     
-    // Check if user exists
-    const user = await getRow(
-      db,
-      'SELECT * FROM menulogin WHERE id = ?',
-      [id]
-    );
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
+    const db = require('../config/database');
+    await new Promise((resolve, reject) => {
+      db.run('DELETE FROM users WHERE id = ?', [id], function(err) {
+        if (err) reject(err);
+        else resolve(this.changes);
       });
-    }
-
-    await runQuery(
-      db,
-      'DELETE FROM menulogin WHERE id = ?',
-      [id]
-    );
-
+    });
+    
     res.json({
       success: true,
       message: 'User deleted successfully'
@@ -208,40 +189,7 @@ const deleteUser = async (req, res) => {
     console.error('Delete user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete user',
-      error: error.message
+      message: 'Internal server error'
     });
   }
-};
-
-// Get all users
-const getAllUsers = async (req, res) => {
-  try {
-    const db = getDatabase('menulogin');
-    const users = await getAllRows(
-      db,
-      'SELECT id, username, access_level, created_at, updated_at FROM menulogin',
-      []
-    );
-
-    res.json({
-      success: true,
-      data: users
-    });
-  } catch (error) {
-    console.error('Get all users error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get users',
-      error: error.message
-    });
-  }
-};
-
-module.exports = {
-  login,
-  addUser,
-  editUser,
-  deleteUser,
-  getAllUsers
 };

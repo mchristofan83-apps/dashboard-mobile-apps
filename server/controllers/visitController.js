@@ -1,6 +1,34 @@
-const { getDatabase, runQuery, getRow, getAllRows } = require('../database/init');
+const db = require('../config/database');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
+
+// Helper functions for database operations
+const runQuery = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.run(query, params, function(err) {
+      if (err) reject(err);
+      else resolve({ lastID: this.lastID, changes: this.changes });
+    });
+  });
+};
+
+const getRow = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.get(query, params, (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+const getAllRows = (query, params) => {
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
 
 // MD VISIT CONTROLLERS
 
@@ -29,8 +57,7 @@ const getAllMdVisits = async (req, res) => {
 
     query += ' ORDER BY datevisit DESC';
 
-    const db = getDatabase('datavisitmd');
-    const visits = await getAllRows(db, query, params);
+    const visits = await getAllRows(query, params);
 
     res.json({
       success: true,
@@ -51,12 +78,7 @@ const getMdVisitById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const db = getDatabase('datavisitmd');
-    const visit = await getRow(
-      db,
-      'SELECT * FROM datavisitmd WHERE id = ?',
-      [id]
-    );
+    const visit = await getRow('SELECT * FROM datavisitmd WHERE id = ?', [id]);
 
     if (!visit) {
       return res.status(404).json({
@@ -91,9 +113,7 @@ const addMdVisit = async (req, res) => {
       });
     }
 
-    const db = getDatabase('datavisitmd');
     const result = await runQuery(
-      db,
       'INSERT INTO datavisitmd (username, amo, warehouse, idoutlet, namaoutlet, datevisit, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [username, amo, warehouse, idoutlet, namaoutlet, datevisit, 'scheduled']
     );
@@ -119,10 +139,7 @@ const editMdVisit = async (req, res) => {
     const { id } = req.params;
     const { username, amo, warehouse, idoutlet, namaoutlet, datevisit, status } = req.body;
 
-    const db = getDatabase('datavisitmd');
-    
     const visit = await getRow(
-      db,
       'SELECT * FROM datavisitmd WHERE id = ?',
       [id]
     );
@@ -135,7 +152,6 @@ const editMdVisit = async (req, res) => {
     }
 
     await runQuery(
-      db,
       'UPDATE datavisitmd SET username = ?, amo = ?, warehouse = ?, idoutlet = ?, namaoutlet = ?, datevisit = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [
         username || visit.username,
@@ -168,10 +184,7 @@ const deleteMdVisit = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const db = getDatabase('datavisitmd');
-    
     const visit = await getRow(
-      db,
       'SELECT * FROM datavisitmd WHERE id = ?',
       [id]
     );
@@ -184,7 +197,6 @@ const deleteMdVisit = async (req, res) => {
     }
 
     await runQuery(
-      db,
       'DELETE FROM datavisitmd WHERE id = ?',
       [id]
     );
@@ -225,7 +237,6 @@ const uploadMdExcel = async (req, res) => {
       });
     }
 
-    const db = getDatabase('datavisitmd');
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
@@ -247,7 +258,6 @@ const uploadMdExcel = async (req, res) => {
 
       try {
         await runQuery(
-          db,
           'INSERT INTO datavisitmd (username, amo, warehouse, idoutlet, namaoutlet, datevisit, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
           [username, amo, warehouse, idoutlet, namaoutlet, datevisit, 'scheduled']
         );

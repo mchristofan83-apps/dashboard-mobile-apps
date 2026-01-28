@@ -1,52 +1,107 @@
 import Constants from 'expo-constants';
 
-// Get the device's local IP address for development
-// You can find your computer's IP address by running:
-// Windows: ipconfig
-// Mac/Linux: ifconfig or ip addr
+// Mobile App Environment Configuration
+// Complete Subdomain Integration
 
-// IMPORTANT: Update this IP address to match your computer's local network IP
-const DEV_API_URL = process.env.DEV_API_URL || 'http://192.168.0.43:8000/api';
+// Development API URL - Local server
+const DEV_API_URL = process.env.DEV_API_URL || 'http://localhost:8000/api';
 
-// For production, set `PROD_API_URL` to your server (e.g. https://example.com/api)
-const PROD_API_URL = process.env.PROD_API_URL || 'https://your-production-server.com/api';
+// Production API URL - Cloudflare Worker with subdomain
+const PROD_API_URL = process.env.PROD_API_URL || 'https://api.gisconnect.online/api';
 
-// Automatically detect environment
-const ENV = {
-  dev: {
-    apiUrl: DEV_API_URL,
-  },
-  prod: {
-    apiUrl: PROD_API_URL,
-  },
-};
+// Staging API URL - Staging subdomain
+const STAGING_API_URL = process.env.STAGING_API_URL || 'https://staging-api.gisconnect.online/api';
 
-// Function to get current environment config
-const getEnvVars = () => {
-  if (__DEV__) {
-    return ENV.dev;
+// Fallback API URL - Direct to origin server with subdomain
+const FALLBACK_API_URL = process.env.FALLBACK_API_URL || 'https://server.gisconnect.online/api';
+
+// Cloudflare configuration with subdomains
+const CLOUDFLARE_CONFIG = {
+  enabled: process.env.CLOUDFLARE_ENABLED === 'true',
+  domain: process.env.CLOUDFLARE_DOMAIN || 'gisconnect.online',
+  workerUrl: 'https://api.gisconnect.online',
+  dashboardUrl: 'https://dashboard.gisconnect.online',
+  serverUrl: 'https://server.gisconnect.online',
+  syncEnabled: process.env.SYNC_ENABLED === 'true',
+  syncInterval: parseInt(process.env.SYNC_INTERVAL) || 300000, // 5 minutes
+  kvNamespace: 'af106ee16e7941f6a706a004410db88e',
+  subdomains: {
+    dashboard: 'dashboard.gisconnect.online',
+    api: 'api.gisconnect.online',
+    server: 'server.gisconnect.online',
+    staging: 'staging.gisconnect.online'
   }
-  return ENV.prod;
 };
 
-export default getEnvVars;
+// Environment detection
+const isDevelopment = __DEV__;
+const isProduction = !isDevelopment;
+const isStaging = process.env.NODE_ENV === 'staging';
 
-// Helper function to get API URL
-export const getApiUrl = () => {
-  return getEnvVars().apiUrl;
+// API Endpoints
+const API_ENDPOINTS = {
+  users: '/users',
+  outlets: '/outlets',
+  visits: '/visits',
+  sync: '/sync',
+  health: '/health',
+  auth: '/auth'
 };
 
-// Instructions for updating the API URL:
-// 1. Find your computer's IP address:
-//    - Windows: Open Command Prompt and run 'ipconfig'
-//    - Mac: Open Terminal and run 'ifconfig' or 'ipconfig getifaddr en0'
-//    - Linux: Open Terminal and run 'ip addr' or 'hostname -I'
-// 
-// 2. Look for your local network IP (usually starts with 192.168.x.x or 10.0.x.x)
-// 
-// 3. Update the DEV_API_URL above with your IP address
-//    Example: const DEV_API_URL = 'http://192.168.1.100:3001/api';
-// 
-// 4. Make sure your computer and mobile device are on the same WiFi network
-// 
-// 5. Ensure your firewall allows connections on port 3001
+// Current environment configuration
+const config = {
+  // API Configuration
+  apiUrl: isStaging ? STAGING_API_URL : (isDevelopment ? DEV_API_URL : PROD_API_URL),
+  fallbackUrl: FALLBACK_API_URL,
+  
+  // Environment flags
+  isDevelopment,
+  isProduction,
+  isStaging,
+  
+  // Cloudflare Configuration
+  cloudflare: CLOUDFLARE_CONFIG,
+  
+  // API Endpoints
+  endpoints: API_ENDPOINTS,
+  
+  // Feature flags
+  features: {
+    cloudflareCaching: !isDevelopment,
+    realTimeSync: true,
+    offlineMode: true,
+    debugging: isDevelopment,
+    analytics: !isDevelopment,
+    subdomainRouting: !isDevelopment
+  },
+  
+  // App Configuration
+  app: {
+    name: 'GIS Dashboard Mobile',
+    version: '1.0.0',
+    buildNumber: Constants.expoConfig?.version || '1.0.0'
+  }
+};
+
+export default config;
+
+// Helper functions
+export const getApiUrl = () => config.apiUrl;
+export const getFallbackUrl = () => config.fallbackUrl;
+export const getCloudflareUrl = () => config.cloudflare.workerUrl;
+export const getDashboardUrl = () => config.cloudflare.dashboardUrl;
+export const getServerUrl = () => config.cloudflare.serverUrl;
+export const isProductionMode = () => isProduction;
+export const isStagingMode = () => isStaging;
+export const getEndpoint = (endpoint) => config.apiUrl + config.endpoints[endpoint];
+
+// Export for debugging
+if (isDevelopment) {
+  console.log('🔧 Mobile App Configuration:', {
+    environment: isStaging ? 'staging' : (isDevelopment ? 'development' : 'production'),
+    apiUrl: config.apiUrl,
+    cloudflareEnabled: config.cloudflare.enabled,
+    syncEnabled: config.cloudflare.syncEnabled,
+    subdomains: config.cloudflare.subdomains
+  });
+}
