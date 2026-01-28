@@ -2,6 +2,7 @@
 import io from 'socket.io-client';
 import config from '../config/production';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getServerUrl } from '../config/environment';
 
 class MobileRealtimeService {
   constructor() {
@@ -20,7 +21,7 @@ class MobileRealtimeService {
         throw new Error('No authentication token found');
       }
 
-      this.socket = io(config.websocket.url, {
+      this.socket = io(getServerUrl() || config.websocket.url, {
         auth: {
           token: token
         },

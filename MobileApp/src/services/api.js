@@ -3,11 +3,12 @@ import axios from 'axios';
 import config from '../config/production';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
+import { getApiUrl } from '../config/environment';
 
 class APIService {
   constructor() {
     this.client = axios.create({
-      baseURL: config.api.baseURL,
+      baseURL: getApiUrl() || config.api.baseURL,
       timeout: config.api.timeout,
       headers: {
         'Content-Type': 'application/json',
